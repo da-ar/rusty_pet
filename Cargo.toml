@@ -1,0 +1,18 @@
+
+[package]
+name = "rusty_pet"
+version = "0.1.0"
+edition = "2021"
+
+
+[dependencies]
+log = "0.4"
+cliclack = "0.1.12"
+console = "0.15.8"
+ctrlc = "3.4.2"
+env_logger = "0.11.2"
+toml = "0.8.10"
+reqwest = { version = "0.11", features = ["json"] }
+tokio = { version = "1", features = ["full"] }
+serde = { version = "1.0.196", features = ["derive"] }
+serde_json = "1.0.113"

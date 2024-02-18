@@ -1,0 +1,39 @@
+
+[package]
+name = "rusty_pet"
+version = "0.1.0"
+edition = "2021"
+authors = ["Rusty Pet Contributors"]
+description = "A powerful command-line utility for interacting with the SurePet API"
+readme = "README.md"
+homepage = "https://github.com/yourusername/rusty_pet"
+repository = "https://github.com/yourusername/rusty_pet"
+license = "MIT"
+keywords = ["cli", "pet", "surepet", "api", "monitoring"]
+categories = ["command-line-utilities", "api-bindings"]
+
+
+[dependencies]
+log = "0.4"
+cliclack = "0.1.12"
+console = "0.15.8"
+ctrlc = "3.4.2"
+env_logger = "0.11.2"
+toml = "0.8.10"
+reqwest = { version = "0.11", features = ["json"] }
+tokio = { version = "1", features = ["full"] }
+serde = { version = "1.0.196", features = ["derive"] }
+serde_json = "1.0.113"
+dirs = "5.0"
+chrono = { version = "0.4", features = ["serde"] }
+chrono-tz = "0.8"
+iana-time-zone = "0.1"
+clap = { version = "4.4", features = ["derive"] }
+atty = "0.2"
+thiserror = "1.0"
+csv = "1.3"
+uuid = { version = "1.0", features = ["v4", "serde"] }
+regex = "1.10"
+
+[dev-dependencies]
+tempfile = "3.8"

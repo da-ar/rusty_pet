@@ -1,4 +1,4 @@
-use crate::config;
+use crate::{config, Context};
 use log::debug;
 use reqwest::StatusCode;
 use serde::Deserialize;
@@ -32,16 +32,16 @@ pub struct User {
     pub updated_at: String,
 }
 
-pub struct Client {
+pub struct Client<'a> {
     pub client: reqwest::Client,
-    pub cfg: config::Config,
+    pub ctx: &'a Context,
 }
 
-impl Client {
-    pub fn new(cfg: config::Config) -> Self {
+impl Client<'_> {
+    pub fn new(ctx: &Context) -> Self {
         Client {
             client: reqwest::Client::new(),
-            cfg,
+            ctx,
         }
     }
 
@@ -51,7 +51,7 @@ impl Client {
         password: &String,
     ) -> Result<LoginResp, reqwest::Error> {
         let uuid: String = "a1b96664-399d-4c2f-8eaa-b6b5e47c6f31".to_string();
-        let post_url: String = self.cfg.api.surepy_url.to_owned() + "/auth/login";
+        let post_url: String = self.ctx.config.api.surepy_url.to_string() + "/auth/login";
 
         debug!("Posting to: {}", post_url);
 

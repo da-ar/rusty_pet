@@ -9,13 +9,21 @@ use std::env;
 
 const TOKEN_ENV: &str = "SUREPY_TOKEN";
 
+pub struct Context {
+    pub config: config::Config,
+    pub token: String,
+}
+
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
-    let mut builder = Builder::from_default_env();
-    builder.target(Target::Stdout);
-    builder.init();
+    let mut log_builder = Builder::from_default_env();
+    log_builder.target(Target::Stdout);
+    log_builder.init();
 
-    let cfg: config::Config = config::read_config();
+    let mut ctx: Context = Context {
+        config: config::read_config(),
+        token: "".to_string(),
+    };
 
     ctrlc::set_handler(move || {}).expect("setting Ctrl-C handler");
     cliclack::clear_screen()?;
@@ -29,9 +37,9 @@ async fn main() -> std::io::Result<()> {
         .interact()?;
 
     // Sign in etc
-    let api_client = Client::new(cfg);
+    let api_client = Client::new(&ctx);
 
-    let token = check_token(&api_client).await;
+    let token = check_token(&mut ctx, &api_client).await;
     if token.is_ok() == false {
         error!(
             "failed to authenticate to SurePy: {}",
@@ -40,8 +48,8 @@ async fn main() -> std::io::Result<()> {
     }
 
     match op {
-        "st" => do_status(&api_client, &token.unwrap()).await,
-        "ls" => do_list(&api_client, &token.unwrap()).await,
+        "st" => do_status(&mut ctx, &api_client).await,
+        "ls" => do_list(&mut ctx, &api_client).await,
         _ => {
             println!("This is an invalid operation");
             error!("Invalid operation")
@@ -51,20 +59,26 @@ async fn main() -> std::io::Result<()> {
     Ok(())
 }
 
-async fn do_list(api_client: &Client, token: &String) {
+async fn do_list(ctx: &mut Context, api_client: &Client<'_>) {
     debug!("Performing list operation");
 }
 
-async fn do_status(api_client: &Client, token: &String) {
+async fn do_status(ctx: &mut Context, api_client: &Client<'_>) {
     debug!("Performing status operation");
 }
 
-async fn check_token(api_client: &Client) -> std::io::Result<String> {
+async fn check_token(ctx: &mut Context, api_client: &Client<'_>) -> std::io::Result<()> {
     // check if authentication token has been set in environment
     if env::var(TOKEN_ENV).is_ok() {
         debug!("{} found", TOKEN_ENV);
         println!("using token {}", env::var(TOKEN_ENV).unwrap());
-        return Ok(env::var(TOKEN_ENV).unwrap());
+
+        // Set the token in the context for future use
+        ctx.token = env::var(TOKEN_ENV).unwrap();
+
+        return Ok(());
+    } else if !ctx.token.is_empty() {
+        return Ok(());
     } else {
         // if no token, sign in with username and password then return the token
         debug!("{} not found", TOKEN_ENV);
@@ -79,10 +93,9 @@ async fn check_token(api_client: &Client) -> std::io::Result<String> {
             .await
             .expect("Failed to log in");
 
-        // Set the token in the environment for use in same session
-        env::set_var(TOKEN_ENV, &resp.data.token);
-        debug!("Token ENV set");
+        // Set the token in the context for future use
+        ctx.token = resp.data.token;
 
-        return Ok(resp.data.token);
+        return Ok(());
     }
 }
